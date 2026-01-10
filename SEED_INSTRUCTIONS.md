@@ -12,6 +12,9 @@ docker compose up -d
 
 # Run seed script inside backend container
 docker compose exec backend npm run seed
+
+# Or directly:
+docker compose exec backend node database/seed.js
 ```
 
 The database connection is already configured in Docker!
@@ -61,8 +64,11 @@ If you don't want to install Node.js dependencies:
 # Make sure database exists and schema is applied
 psql -U postgres -d nye_staffing -f database/schema.sql
 
-# Run seed SQL
+# Run seed SQL (from project root)
 psql -U postgres -d nye_staffing -f database/seed.sql
+
+# Or from Docker:
+docker compose exec db psql -U postgres -d nye_staffing -f /docker-entrypoint-initdb.d/seed.sql
 ```
 
 ## What Gets Created

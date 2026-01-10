@@ -6,7 +6,7 @@ This directory contains scripts to seed the database with dummy data for testing
 
 - `schema.sql` - Database schema (tables, indexes, triggers)
 - `seed.sql` - SQL script for seeding (alternative method)
-- `seed.js` - Node.js script for seeding (recommended)
+- `backend/database/seed.js` - Node.js script for seeding (recommended, located in backend directory)
 
 ## Quick Start
 
@@ -39,10 +39,10 @@ psql -U postgres -d nye_staffing -f seed.sql
 ### Using Docker
 
 ```bash
-# Run seed script in backend container
+# Run seed script in backend container (recommended)
 docker compose exec backend npm run seed
 
-# Or directly
+# Or directly with correct path
 docker compose exec backend node database/seed.js
 
 # Or using SQL
