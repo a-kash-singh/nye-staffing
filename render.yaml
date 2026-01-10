@@ -1,11 +1,4 @@
 services:
-  # PostgreSQL Database
-  - type: pg
-    name: nye-staffing-db
-    plan: free
-    databaseName: nye_staffing
-    user: nye_staffing_user
-
   # Backend API
   - type: web
     name: nye-staffing-backend
@@ -19,25 +12,15 @@ services:
       - key: PORT
         value: 10000
       - key: DB_HOST
-        fromDatabase:
-          name: nye-staffing-db
-          property: host
+        sync: false
       - key: DB_PORT
-        fromDatabase:
-          name: nye-staffing-db
-          property: port
+        value: 5432
       - key: DB_NAME
-        fromDatabase:
-          name: nye-staffing-db
-          property: database
+        sync: false
       - key: DB_USER
-        fromDatabase:
-          name: nye-staffing-db
-          property: user
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase:
-          name: nye-staffing-db
-          property: password
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -60,7 +43,4 @@ services:
     plan: free
     envVars:
       - key: BACKEND_URL
-        fromService:
-          name: nye-staffing-backend
-          type: web
-          property: host
+        sync: false
