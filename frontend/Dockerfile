@@ -18,17 +18,21 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Enable environment variable substitution in nginx
-ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d
+# Install gettext for envsubst
+RUN apk add --no-cache gettext
 
 # Copy built files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration template
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+
+# Copy startup script
+COPY nginx-start.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/nginx-start.sh
 
 # Expose port
 EXPOSE 80
 
-# Start nginx with envsubst
-CMD ["/bin/sh", "-c", "envsubst '$$BACKEND_URL' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# Start nginx
+CMD ["/docker-entrypoint.d/nginx-start.sh"]
