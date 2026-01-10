@@ -12,21 +12,22 @@ This directory contains scripts to seed the database with dummy data for testing
 
 ### Using Node.js Script (Recommended)
 
-From the project root:
+From the backend directory:
 
 ```bash
-# Make sure backend dependencies are installed
-cd backend && npm install && cd ..
+# Make sure dependencies are installed
+cd backend
+npm install
 
 # Run seed script
-cd database
-node seed.js
+npm run seed
 ```
 
-Or from backend directory:
+Or directly:
 
 ```bash
-npm run seed
+cd backend
+node database/seed.js
 ```
 
 ### Using SQL Script
@@ -38,8 +39,11 @@ psql -U postgres -d nye_staffing -f seed.sql
 ### Using Docker
 
 ```bash
-# Copy seed script to container and run
-docker compose exec backend node /path/to/seed.js
+# Run seed script in backend container
+docker compose exec backend npm run seed
+
+# Or directly
+docker compose exec backend node database/seed.js
 
 # Or using SQL
 docker compose exec db psql -U postgres -d nye_staffing -f /docker-entrypoint-initdb.d/seed.sql

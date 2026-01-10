@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "node database/migrate.js",
-    "seed": "node ../database/seed.js"
+    "seed": "node database/seed.js"
   },
   "keywords": ["event", "staffing", "api"],
   "author": "",
