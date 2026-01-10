@@ -51,11 +51,13 @@ CORS_ORIGIN=https://nye-staffing-frontend.onrender.com
 
 1. Go to the **`nye-staffing-frontend`** service
 2. Click **"Environment"** tab
-3. Add:
+3. Add (if not auto-set by Blueprint):
 
 ```
 BACKEND_URL=https://nye-staffing-backend.onrender.com
 ```
+
+**Note:** If using Blueprint, this should be automatically set. If not, use the full backend URL (e.g., `https://nye-staffing-backend.onrender.com`).
 
 ## Step 5: Initialize Database
 
