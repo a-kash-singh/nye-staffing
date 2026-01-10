@@ -66,6 +66,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: nye-staffing-frontend
+    environment:
+      - BACKEND_URL=http://backend:3000
     ports:
       - "${FRONTEND_PORT:-80}:80"
     depends_on:
