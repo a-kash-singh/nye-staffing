@@ -1,0 +1,28 @@
+FROM node:18-alpine
+
+# Install PostgreSQL client for health checks
+RUN apk add --no-cache postgresql-client
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Create uploads directory
+RUN mkdir -p uploads
+
+# Expose port
+EXPOSE 3000
+
+# Use entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# Default command (can be overridden in docker-compose)
+CMD ["npm", "run", "dev"]
