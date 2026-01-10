@@ -66,6 +66,7 @@ services:
     container_name: nye-staffing-frontend-dev
     environment:
       - VITE_API_URL=http://backend:3000
+      - NODE_ENV=development
     volumes:
       - ./frontend:/app
       - /app/node_modules
