@@ -29,23 +29,38 @@ After the backend service is created:
 
 1. Go to the **`nye-staffing-backend`** service
 2. Click **"Environment"** tab
-3. Add/Update these variables:
+3. **Link the PostgreSQL database** (Recommended):
+   - Click **"Link Database"** or **"Add Database"**
+   - Select your `nye-staffing-db` PostgreSQL service
+   - This automatically sets `DATABASE_URL` (SSL-enabled connection)
+
+4. **Add other required variables:**
 
 ```
-DB_HOST=<from your PostgreSQL service - Internal Database URL>
-DB_PORT=5432
-DB_NAME=nye_staffing
-DB_USER=<from your PostgreSQL service>
-DB_PASSWORD=<from your PostgreSQL service>
-JWT_SECRET=<generate a strong secret>
+JWT_SECRET=<generate a strong secret or use auto-generated>
 JWT_EXPIRES_IN=7d
 CORS_ORIGIN=https://nye-staffing-frontend.onrender.com
+FIREBASE_PROJECT_ID=<your-firebase-project-id> (optional)
+FIREBASE_PRIVATE_KEY=<your-firebase-private-key> (optional)
+FIREBASE_CLIENT_EMAIL=<your-firebase-client-email> (optional)
+```
+
+**Alternative: Manual Database Configuration**
+If you prefer to set individual DB variables instead of `DATABASE_URL`:
+
+```
+DB_HOST=dpg-xxxxx-a.oregon-postgres.render.com
+DB_PORT=5432
+DB_NAME=nye_staffing
+DB_USER=nye_staffing_user
+DB_PASSWORD=your_password_here
 ```
 
 **To get database connection details:**
 - Go to your PostgreSQL service
-- Click **"Connect"** → **"Internal Database URL"**
-- Parse the URL: `postgresql://user:password@host:port/database`
+- Click **"Connect"** → **"Internal Database URL"** (for `DATABASE_URL`)
+- Or use **"Connection Pooling"** URL for better performance
+- For individual variables, parse the URL: `postgresql://user:password@host:port/database`
 
 ## Step 4: Configure Frontend Environment Variables
 
@@ -61,35 +76,91 @@ BACKEND_URL=https://nye-staffing-backend.onrender.com
 
 ## Step 5: Initialize Database
 
-1. Go to your PostgreSQL service
-2. Click **"Connect"** → **"Connect via psql"** (or use Render Shell)
-3. Copy the connection command
-4. Run the schema:
+### Option A: Using Render Shell (Recommended)
+
+1. Go to your **PostgreSQL service** (`nye-staffing-db`)
+2. Click **"Connect"** → **"Render Shell"**
+3. Run the schema:
 
 ```bash
-# In Render Shell or your terminal
-psql <connection-string> < database/schema.sql
+# Connect to database
+psql $DATABASE_URL
+
+# Then run schema (copy contents of database/schema.sql)
+\i /path/to/schema.sql
 ```
 
-Or manually:
-1. Go to PostgreSQL service → **"Connect"** → **"Render Shell"**
-2. Run: `psql $DATABASE_URL`
-3. Copy and paste contents of `database/schema.sql`
+Or paste the schema SQL directly in the psql prompt.
 
-## Step 6: Create Admin User
+### Option B: Using Backend Container
 
-Once backend is deployed and database is initialized:
+1. Go to your **backend service** (`nye-staffing-backend`)
+2. Click **"Shell"** tab
+3. Run:
 
 ```bash
-curl -X POST https://nye-staffing-backend.onrender.com/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Admin User",
-    "email": "admin@example.com",
-    "password": "admin123",
-    "role": "admin"
-  }'
+# Run schema
+psql $DATABASE_URL < /app/../database/schema.sql
+
+# Or connect and paste schema
+psql $DATABASE_URL
+# Then paste contents of database/schema.sql
 ```
+
+### Option C: Using Seed Script (Includes Schema + Data)
+
+1. Go to your **backend service** (`nye-staffing-backend`)
+2. Click **"Shell"** tab
+3. Run:
+
+```bash
+# First ensure schema is applied (if not already done)
+psql $DATABASE_URL < /app/../database/schema.sql
+
+# Then run seed script
+cd /app
+npm run seed
+```
+
+This will create:
+- ✅ Database schema (tables, indexes)
+- ✅ 1 Admin user (`admin@nyestaffing.com` / `password123`)
+- ✅ 8 Staff users (password: `password123`)
+- ✅ 10 Events
+- ✅ 14 Event signups
+- ✅ 5 Attendance logs
+- ✅ 6 Chat rooms
+- ✅ 12 Chat messages
+- ✅ 10 Notifications
+
+## Step 6: Verify Deployment
+
+1. **Check backend health:**
+   ```bash
+   curl https://nye-staffing-backend.onrender.com/health
+   ```
+
+2. **Test login with seeded admin:**
+   ```bash
+   curl -X POST https://nye-staffing-backend.onrender.com/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "admin@nyestaffing.com",
+       "password": "password123"
+     }'
+   ```
+
+3. **Or create a new admin user:**
+   ```bash
+   curl -X POST https://nye-staffing-backend.onrender.com/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{
+       "name": "Admin User",
+       "email": "admin@example.com",
+       "password": "admin123",
+       "role": "admin"
+     }'
+   ```
 
 ## Your Live URLs
 
@@ -124,23 +195,40 @@ If Blueprint doesn't work, create services manually:
 ## Troubleshooting
 
 **Backend can't connect to database?**
-- Verify all DB environment variables are set correctly
-- Use the **Internal Database URL** from PostgreSQL service
-- Check database is running (status should be "Available")
+- ✅ **Use `DATABASE_URL`** (recommended) - Link the database in Render dashboard
+- ✅ Verify database is running (status should be "Available")
+- ✅ Check backend logs for connection errors
+- ✅ Ensure SSL is enabled (handled automatically with `DATABASE_URL`)
+- ✅ If using individual variables, verify all are set correctly:
+  - `DB_HOST` = host part (e.g., `dpg-xxxxx-a.oregon-postgres.render.com`)
+  - `DB_PORT` = 5432
+  - `DB_NAME` = database name
+  - `DB_USER` = user part
+  - `DB_PASSWORD` = password part
+
+**SSL Connection Errors?**
+- The code automatically handles SSL for production environments
+- If you see SSL errors, ensure `DATABASE_URL` is set (includes SSL by default)
+- Or verify `NODE_ENV=production` is set
 
 **Frontend shows API errors?**
-- Verify `BACKEND_URL` is set correctly
-- Check `CORS_ORIGIN` in backend includes frontend URL
-- Ensure backend service is running
+- Verify `BACKEND_URL` is set correctly (should be `https://nye-staffing-backend.onrender.com`)
+- Check `CORS_ORIGIN` in backend includes frontend URL (`https://nye-staffing-frontend.onrender.com`)
+- Ensure backend service is running and healthy
+- Check browser console for CORS errors
+
+**Seed script fails?**
+- Ensure database schema is applied first: `psql $DATABASE_URL < database/schema.sql`
+- Check that `DATABASE_URL` or DB variables are set correctly
+- Verify you're running from the backend container shell: `cd /app && npm run seed`
 
 **Database connection string format:**
 ```
-postgresql://user:password@host:port/database
+postgresql://user:password@host:port/database?sslmode=require
 ```
 
-Extract:
-- `DB_HOST` = host part
-- `DB_PORT` = port (usually 5432)
-- `DB_NAME` = database name
-- `DB_USER` = user part
-- `DB_PASSWORD` = password part
+**Render PostgreSQL Notes:**
+- Render PostgreSQL requires SSL connections
+- Use `DATABASE_URL` for automatic SSL configuration
+- Internal connections are faster than external
+- Connection pooling is recommended for production

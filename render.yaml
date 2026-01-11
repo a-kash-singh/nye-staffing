@@ -11,6 +11,12 @@ services:
         value: production
       - key: PORT
         value: 10000
+      # DATABASE_URL will be set automatically when you link the database in Render dashboard
+      # Go to backend service → Environment → Link Database → Select nye-staffing-db
+      - key: DATABASE_URL
+        sync: false
+      # Individual DB variables (alternative to DATABASE_URL)
+      # Set these manually if not using DATABASE_URL
       - key: DB_HOST
         sync: false
       - key: DB_PORT
