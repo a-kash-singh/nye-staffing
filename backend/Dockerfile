@@ -1,8 +1,5 @@
 FROM node:18-alpine
 
-# Install PostgreSQL client for health checks
-RUN apk add --no-cache postgresql-client
-
 WORKDIR /app
 
 # Copy package files
